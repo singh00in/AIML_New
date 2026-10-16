@@ -1,0 +1,173 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspaces_ML_Workspace_name": {
+            "defaultValue": "ML-Workspace",
+            "type": "String"
+        },
+        "storageAccounts_storagemlacc1_externalid": {
+            "defaultValue": "/subscriptions/92fc1f6e-8639-4425-8489-64ccdfb2e499/resourceGroups/RG-YashML/providers/Microsoft.Storage/storageAccounts/storagemlacc1",
+            "type": "String"
+        },
+        "vaults_keyvault_ml1_externalid": {
+            "defaultValue": "/subscriptions/92fc1f6e-8639-4425-8489-64ccdfb2e499/resourceGroups/RG-YashML/providers/Microsoft.Keyvault/vaults/keyvault-ml1",
+            "type": "String"
+        },
+        "components_appinsight_ml1_externalid": {
+            "defaultValue": "/subscriptions/92fc1f6e-8639-4425-8489-64ccdfb2e499/resourceGroups/RG-YashML/providers/Microsoft.insights/components/appinsight-ml1",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.MachineLearningServices/workspaces",
+            "apiVersion": "2026-05-15-preview",
+            "name": "[parameters('workspaces_ML_Workspace_name')]",
+            "location": "eastus2",
+            "sku": {
+                "name": "Basic",
+                "tier": "Basic"
+            },
+            "kind": "Default",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {
+                "friendlyName": "[parameters('workspaces_ML_Workspace_name')]",
+                "storageAccount": "[parameters('storageAccounts_storagemlacc1_externalid')]",
+                "keyVault": "[parameters('vaults_keyvault_ml1_externalid')]",
+                "applicationInsights": "[parameters('components_appinsight_ml1_externalid')]",
+                "hbiWorkspace": false,
+                "managedNetwork": {
+                    "isolationMode": "Disabled",
+                    "enableNetworkMonitor": false,
+                    "managedNetworkKind": "V1"
+                },
+                "allowRoleAssignmentOnRG": true,
+                "v1LegacyMode": false,
+                "publicNetworkAccess": "Enabled",
+                "ipAllowlist": [],
+                "networkAcls": {
+                    "defaultAction": "Allow",
+                    "ipRules": []
+                },
+                "discoveryUrl": "https://eastus2.api.azureml.ms/discovery",
+                "EnableSoftwareBillOfMaterials": false,
+                "enableDataIsolation": false,
+                "systemDatastoresAuthMode": "accesskey",
+                "enableServiceSideCMKEncryption": false,
+                "provisionNetworkNow": false
+            }
+        },
+        {
+            "type": "Microsoft.MachineLearningServices/workspaces/datastores",
+            "apiVersion": "2026-05-15-preview",
+            "name": "[concat(parameters('workspaces_ML_Workspace_name'), '/azureml_globaldatasets')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.MachineLearningServices/workspaces', parameters('workspaces_ML_Workspace_name'))]"
+            ],
+            "properties": {
+                "isDefault": false,
+                "credentials": {
+                    "credentialsType": "Sas"
+                },
+                "datastoreType": "AzureBlob",
+                "accountName": "mmstorageeastus2",
+                "containerName": "globaldatasets",
+                "endpoint": "core.windows.net",
+                "protocol": "https",
+                "serviceDataAccessAuthIdentity": "None"
+            }
+        },
+        {
+            "type": "Microsoft.MachineLearningServices/workspaces/datastores",
+            "apiVersion": "2026-05-15-preview",
+            "name": "[concat(parameters('workspaces_ML_Workspace_name'), '/workspaceartifactstore')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.MachineLearningServices/workspaces', parameters('workspaces_ML_Workspace_name'))]"
+            ],
+            "properties": {
+                "isDefault": false,
+                "credentials": {
+                    "credentialsType": "AccountKey"
+                },
+                "subscriptionId": "92fc1f6e-8639-4425-8489-64ccdfb2e499",
+                "resourceGroup": "RG-YashML",
+                "datastoreType": "AzureBlob",
+                "accountName": "storagemlacc1",
+                "containerName": "azureml",
+                "endpoint": "core.windows.net",
+                "protocol": "https",
+                "serviceDataAccessAuthIdentity": "None"
+            }
+        },
+        {
+            "type": "Microsoft.MachineLearningServices/workspaces/datastores",
+            "apiVersion": "2026-05-15-preview",
+            "name": "[concat(parameters('workspaces_ML_Workspace_name'), '/workspaceblobstore')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.MachineLearningServices/workspaces', parameters('workspaces_ML_Workspace_name'))]"
+            ],
+            "properties": {
+                "isDefault": true,
+                "credentials": {
+                    "credentialsType": "AccountKey"
+                },
+                "subscriptionId": "92fc1f6e-8639-4425-8489-64ccdfb2e499",
+                "resourceGroup": "RG-YashML",
+                "datastoreType": "AzureBlob",
+                "accountName": "storagemlacc1",
+                "containerName": "azureml-blobstore-f7e018c8-4eb2-4f6b-959e-7223c1c149b6",
+                "endpoint": "core.windows.net",
+                "protocol": "https",
+                "serviceDataAccessAuthIdentity": "WorkspaceSystemAssignedIdentity"
+            }
+        },
+        {
+            "type": "Microsoft.MachineLearningServices/workspaces/datastores",
+            "apiVersion": "2026-05-15-preview",
+            "name": "[concat(parameters('workspaces_ML_Workspace_name'), '/workspacefilestore')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.MachineLearningServices/workspaces', parameters('workspaces_ML_Workspace_name'))]"
+            ],
+            "properties": {
+                "isDefault": false,
+                "credentials": {
+                    "credentialsType": "AccountKey"
+                },
+                "subscriptionId": "92fc1f6e-8639-4425-8489-64ccdfb2e499",
+                "resourceGroup": "RG-YashML",
+                "datastoreType": "AzureFile",
+                "accountName": "storagemlacc1",
+                "fileShareName": "azureml-filestore-f7e018c8-4eb2-4f6b-959e-7223c1c149b6",
+                "endpoint": "core.windows.net",
+                "protocol": "https",
+                "serviceDataAccessAuthIdentity": "None"
+            }
+        },
+        {
+            "type": "Microsoft.MachineLearningServices/workspaces/datastores",
+            "apiVersion": "2026-05-15-preview",
+            "name": "[concat(parameters('workspaces_ML_Workspace_name'), '/workspaceworkingdirectory')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.MachineLearningServices/workspaces', parameters('workspaces_ML_Workspace_name'))]"
+            ],
+            "properties": {
+                "isDefault": false,
+                "credentials": {
+                    "credentialsType": "AccountKey"
+                },
+                "subscriptionId": "92fc1f6e-8639-4425-8489-64ccdfb2e499",
+                "resourceGroup": "RG-YashML",
+                "datastoreType": "AzureFile",
+                "accountName": "storagemlacc1",
+                "fileShareName": "code-391ff5ac-6576-460f-ba4d-7e03433c68b6",
+                "endpoint": "core.windows.net",
+                "protocol": "https",
+                "serviceDataAccessAuthIdentity": "None"
+            }
+        }
+    ]
+}
